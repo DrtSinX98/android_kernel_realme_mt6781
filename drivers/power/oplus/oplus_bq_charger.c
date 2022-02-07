@@ -615,7 +615,7 @@ int oplus_battery_get_property(struct power_supply *psy,
                         val->intval = POWER_SUPPLY_STATUS_CHARGING;
 #endif /* CONFIG_OPLUS_CHARGER_MTK6769 */
                 } else {
-                        val->intval = chip->prop_status;
+                        val->intval = chip->prop_status == POWER_SUPPLY_STATUS_NOT_CHARGING ? POWER_SUPPLY_STATUS_DISCHARGING : chip->prop_status;
                 }
                 break;
         case POWER_SUPPLY_PROP_HEALTH:
