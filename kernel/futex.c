@@ -268,6 +268,10 @@ struct futex_hash_bucket {
 	struct plist_head chain;
 } ____cacheline_aligned_in_smp;
 
+#ifdef CONFIG_MTK_TASK_TURBO
+#include <mt-plat/task_turbo_futex.h>
+#endif
+
 /*
  * The base of the bucket array and its size are always used together
  * (after initialization only in hash_futex()), so ensure that they
@@ -1034,7 +1038,8 @@ static inline void exit_pi_state_list(struct task_struct *curr) { }
  *	FUTEX_OWNER_DIED bit. See [4]
  *
  * [10] There is no transient state which leaves owner and user space
- *	TID out of sync.
+ *	TID out of sync. Except one error case where the kernel is denied
+ *	write access to the user address, see fixup_pi_state_owner().
  *
  *
  * Serialization and lifetime rules:
@@ -2357,9 +2362,12 @@ static inline void __queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
 	 * the others are woken last, in FIFO order.
 	 */
 	prio = min(current->normal_prio, MAX_RT_PRIO);
-
 	plist_node_init(&q->list, prio);
+#ifdef CONFIG_MTK_TASK_TURBO
+	futex_plist_add(q, hb);
+#else
 	plist_add(&q->list, &hb->chain);
+#endif
 	q->task = current;
 }
 
@@ -2718,8 +2726,19 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
 		 * flagged for rescheduling. Only call schedule if there
 		 * is no timeout, or if it has yet to expire.
 		 */
-		if (!timeout || timeout->task)
+		if (!timeout || timeout->task){
+#ifdef OPLUS_FEATURE_HEALTHINFO
+#ifdef CONFIG_OPLUS_JANK_INFO
+			current->in_futex = 1;
+#endif
+#endif /* OPLUS_FEATURE_HEALTHINFO */
 			freezable_schedule();
+#ifdef OPLUS_FEATURE_HEALTHINFO
+#ifdef CONFIG_OPLUS_JANK_INFO
+			current->in_futex = 0;
+#endif
+#endif /* OPLUS_FEATURE_HEALTHINFO */
+		}
 	}
 	__set_current_state(TASK_RUNNING);
 }
@@ -2904,7 +2923,6 @@ static int futex_lock_pi(u32 __user *uaddr, unsigned int flags,
 			 ktime_t *time, int trylock)
 {
 	struct hrtimer_sleeper timeout, *to = NULL;
-	struct futex_pi_state *pi_state = NULL;
 	struct task_struct *exiting = NULL;
 	struct rt_mutex_waiter rt_waiter;
 	struct futex_hash_bucket *hb;
@@ -3047,22 +3065,8 @@ no_block:
 	if (res)
 		ret = (res < 0) ? res : 0;
 
-	/*
-	 * If fixup_owner() faulted and was unable to handle the fault, unlock
-	 * it and return the fault to userspace.
-	 */
-	if (ret && (rt_mutex_owner(&q.pi_state->pi_mutex) == current)) {
-		pi_state = q.pi_state;
-		get_pi_state(pi_state);
-	}
-
 	/* Unqueue and drop the lock */
 	unqueue_me_pi(&q);
-
-	if (pi_state) {
-		rt_mutex_futex_unlock(&pi_state->pi_mutex);
-		put_pi_state(pi_state);
-	}
 
 	goto out_put_key;
 
@@ -3329,7 +3333,6 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 				 u32 __user *uaddr2)
 {
 	struct hrtimer_sleeper timeout, *to = NULL;
-	struct futex_pi_state *pi_state = NULL;
 	struct rt_mutex_waiter rt_waiter;
 	struct futex_hash_bucket *hb;
 	union futex_key key2 = FUTEX_KEY_INIT;
@@ -3414,10 +3417,6 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 		if (q.pi_state && (q.pi_state->owner != current)) {
 			spin_lock(q.lock_ptr);
 			ret = fixup_pi_state_owner(uaddr2, &q, current);
-			if (ret && rt_mutex_owner(&q.pi_state->pi_mutex) == current) {
-				pi_state = q.pi_state;
-				get_pi_state(pi_state);
-			}
 			/*
 			 * Drop the reference to the pi state which
 			 * the requeue_pi() code acquired for us.
@@ -3454,23 +3453,8 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 		if (res)
 			ret = (res < 0) ? res : 0;
 
-		/*
-		 * If fixup_pi_state_owner() faulted and was unable to handle
-		 * the fault, unlock the rt_mutex and return the fault to
-		 * userspace.
-		 */
-		if (ret && rt_mutex_owner(&q.pi_state->pi_mutex) == current) {
-			pi_state = q.pi_state;
-			get_pi_state(pi_state);
-		}
-
 		/* Unqueue and drop the lock. */
 		unqueue_me_pi(&q);
-	}
-
-	if (pi_state) {
-		rt_mutex_futex_unlock(&pi_state->pi_mutex);
-		put_pi_state(pi_state);
 	}
 
 	if (ret == -EINTR) {
@@ -3917,7 +3901,7 @@ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
 	case FUTEX_WAIT:
 		val3 = FUTEX_BITSET_MATCH_ANY;
 	case FUTEX_WAIT_BITSET:
-		return futex_wait(uaddr, flags, val, timeout, val3);
+	return futex_wait(uaddr, flags, val, timeout, val3);
 	case FUTEX_WAKE:
 		val3 = FUTEX_BITSET_MATCH_ANY;
 	case FUTEX_WAKE_BITSET:
