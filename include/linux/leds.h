@@ -25,14 +25,26 @@ struct device;
 /*
  * LED Core
  */
-
+ /* wangcheng@ODM.Multimedia.LCD  2021/04/29 add for 11bit bl control, begin. */
+#ifndef CONFIG_OPLUS_DISPLAY_MTK6781
 enum led_brightness {
 	LED_OFF		= 0,
 	LED_ON		= 1,
 	LED_HALF	= 127,
 	LED_FULL	= 255,
 };
-
+#else
+enum led_brightness {
+	LED_OFF		= 0,
+	LED_ON		= 1,
+	LED_HALF	= 1024,
+/* #ifdef OPLUS_BUG_COMPATIBILITY */
+/* wangcheng@MULTIMEDIA.DISPLAY.LCD 2021/07/31 modified for Solve the backlight current reaches 60mA when starting up  */
+	LED_FULL	= 1728,
+/* #endif */
+};
+#endif
+/* wangcheng@ODM.Multimedia.LCD  2021/04/29 add for 11bit bl control, end. */
 struct led_classdev {
 	const char		*name;
 	enum led_brightness	 brightness;

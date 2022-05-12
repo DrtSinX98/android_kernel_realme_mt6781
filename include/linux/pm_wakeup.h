@@ -62,6 +62,8 @@ struct wakeup_source {
 	struct timer_list	timer;
 	unsigned long		timer_expires;
 	ktime_t total_time;
+/* wenxian.Zhen@PSW.BSP.POWER, , 2018/11/14, Add for print wakeup source */
+	ktime_t total_time_backup;
 	ktime_t max_time;
 	ktime_t last_time;
 	ktime_t start_prevent_time;
