@@ -39,7 +39,7 @@ static int64_t real_statistics_time;
 
 /*---------------------Function: When ap suspend,statstics wakeup reason---------------------*/
 
-void pmic_irq_count_function_init()
+void pmic_irq_count_function_init(void)
 {
 	int i = 0;
 
@@ -606,7 +606,7 @@ static void dump_rpmh_state()
 	PR_INFO("--->Screen_off_time=%lld(s)\n", screen_off_time);
 }
 
-void oplus_rpm_stats_statics_clear()
+void oplus_rpm_stats_statics_clear(void)
 {
 	int i, len;
 	struct rpmh_state_desc_t *desc;
