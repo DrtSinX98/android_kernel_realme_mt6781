@@ -30,11 +30,16 @@ struct mmc_gpio {
 	char cd_label[0];
 };
 
+extern void msdc_sd_power_off_quick(void);
+
 static irqreturn_t mmc_gpio_cd_irqt(int irq, void *dev_id)
 {
 	/* Schedule a card detection after a debounce timeout */
 	struct mmc_host *host = dev_id;
 
+	//vendor, 2021/5/13, add quick power off for tf card,start
+	msdc_sd_power_off_quick();
+	//vendor, 2021/5/13, add quick power off for tf card,end
 	host->trigger_card_event = true;
 	mmc_detect_change(host, msecs_to_jiffies(200));
 
@@ -145,6 +150,8 @@ void mmc_gpiod_request_cd_irq(struct mmc_host *host)
 			ctx->cd_label, host);
 		if (ret < 0)
 			irq = ret;
+		else
+			enable_irq_wake(irq);
 	}
 
 	host->slot.cd_irq = irq;
