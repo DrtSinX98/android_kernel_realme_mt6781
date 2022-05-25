@@ -32,9 +32,9 @@ function zupload()
 git clone --depth=1 https://github.com/DrtSinX98/AnyKernel3.git AnyKernel
 cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
 cd AnyKernel
-zip -r9 Cyanide-kernel-1.0-spaced.zip *
+zip -r9 Cyanide-kernel-2.0-spaced.zip *
 curl -sL https://git.io/file-transfer | sh
-./transfer wet Cyanide-kernel-1.0-spaced.zip
+./transfer wet Cyanide-kernel-2.0-spaced.zip
 }
 
 compile
