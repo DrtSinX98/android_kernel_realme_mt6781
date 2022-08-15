@@ -7,8 +7,8 @@ source ~/.bashrc && source ~/.profile
 export LC_ALL=C && export USE_CCACHE=1
 ccache -M 100G
 export ARCH=arm64
-export KBUILD_BUILD_HOST=Cyanide
-export KBUILD_BUILD_USER="pritish"
+export KBUILD_BUILD_HOST=COSMOS
+export KBUILD_BUILD_USER="INFIX"
 git clone --depth=1 https://github.com/DrtSinX98/android_prebuilts_clang_host_linux-x86_clang-6443078 clang
 git clone --depth=1 https://github.com/DrtSinX98/prebuilts_gcc_linux-x86_aarch64_aarch64-linaro-7 los-4.9-64
 git clone --depth=1 https://github.com/DrtSinX98/linaro_arm-linux-gnueabihf-7.5 los-4.9-32
@@ -29,12 +29,12 @@ make -j$(nproc --all) O=out \
 
 function zupload()
 {
-git clone --depth=1 https://github.com/DrtSinX98/AnyKernel3.git AnyKernel
+git clone --depth=1 https://github.com/HELLINFIX/AnyKernel3.git AnyKernel
 cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
 cd AnyKernel
-zip -r9 Cyanide-kernel-2.0-spaced.zip *
+zip -r9 COSMOS-kernel-1.0-spaced.zip *
 curl -sL https://git.io/file-transfer | sh
-./transfer wet Cyanide-kernel-2.0-spaced.zip
+./transfer wet COSMOS-kernel-1.0-spaced.zip
 }
 
 compile
