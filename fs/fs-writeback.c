@@ -1399,6 +1399,7 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	 */
 	spin_lock(&inode->i_lock);
     dirty = inode->i_state & I_DIRTY;
+	
 	if ((inode->i_state & I_DIRTY_TIME) &&
 	    ((dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) ||
 	     wbc->sync_mode == WB_SYNC_ALL || wbc->for_sync ||
