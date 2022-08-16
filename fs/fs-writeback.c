@@ -1404,7 +1404,7 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 		trace_writeback_lazytime(inode);
 		mark_inode_dirty_sync(inode);
 	}
-	
+
 	/*
 	 * Some filesystems may redirty the inode during the writeback
 	 * due to delalloc, clear dirty metadata flags right before
