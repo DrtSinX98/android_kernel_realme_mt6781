@@ -1334,7 +1334,7 @@ static long ffs_epfile_ioctl(struct file *file, unsigned code,
 		desc = epfile->ep->descs[desc_idx];
 
 		spin_unlock_irq(&epfile->ffs->eps_lock);
-		ret = copy_to_user((void __user *)value, desc, desc->bLength);
+		ret = copy_to_user((void *)value, &desc1, desc1.bLength);
 		if (ret)
 			ret = -EFAULT;
 		return ret;
