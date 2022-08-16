@@ -736,7 +736,7 @@ static void mtk_register_power_domains(struct platform_device *pdev,
 		 */
 		on = !WARN_ON(genpd->power_on(genpd) < 0);
 
-		 pm_genpd_init(genpd, NULL, !on);
+		pm_genpd_init(genpd, NULL, !on);
 	}
 
 	/*
