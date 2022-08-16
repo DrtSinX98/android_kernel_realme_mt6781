@@ -1398,8 +1398,7 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	 * write_inode()
 	 */
 	spin_lock(&inode->i_lock);
-
-	dirty = inode->i_state & I_DIRTY;
+    dirty = inode->i_state & I_DIRTY;
 	if ((inode->i_state & I_DIRTY_TIME) &&
 	    ((dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) ||
 	     wbc->sync_mode == WB_SYNC_ALL || wbc->for_sync ||
@@ -1407,7 +1406,6 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 			dirtytime_expire_interval * HZ))) {
 		dirty |= I_DIRTY_TIME;
 		trace_writeback_lazytime(inode);
-	}
 	inode->i_state &= ~dirty;
 
 	/*
